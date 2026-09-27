@@ -25,6 +25,7 @@
   let pointerDown = false;
   let pointerTarget = null;
   let hintTimer = 0;
+  let stinkUntil = 0;
 
   const keys = new Set();
 
@@ -44,6 +45,7 @@
   };
 
   const carrots = [];
+  const onions = [];
   const bunnies = [];
   const flowers = [];
   const clouds = [];
@@ -106,17 +108,30 @@
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, .18, 'triangle', .05), i * 110));
   }
 
+  function stinkSound() {
+    // A short, deliberately silly descending buzz.
+    [260, 175, 105].forEach((f, i) => setTimeout(() => beep(f, .18, 'sawtooth', .055), i * 115));
+  }
+
   function resetGame() {
     caught = 0;
     mia.x = Math.max(85, W * .16);
     mia.y = H * .62;
     mia.carrying = null;
     carrots.length = 0;
+    onions.length = 0;
+    stinkUntil = 0;
     bunnies.length = 0;
     confetti.length = 0;
 
     for (let i = 0; i < 3; i++) {
       carrots.push(makeCarrot(i));
+    }
+    for (let i = 0; i < 2; i++) {
+      onions.push({
+        x: W * (i ? .70 : .35), y: H * (i ? .67 : .43), r: 24,
+        vx: i ? -44 : 48, vy: i ? -28 : 32, phase: i * 2
+      });
     }
 
     // Gentle difficulty: the Lapini are deliberately slower than Mia.
@@ -215,6 +230,22 @@
 
     mia.x = clamp(mia.x, 46, W - 46);
     mia.y = clamp(mia.y, 82, H - 48);
+
+    // Onions wander around the field and bounce at its edges.
+    for (const o of onions) {
+      o.phase += dt;
+      o.x += o.vx * dt;
+      o.y += (o.vy + Math.sin(o.phase * 2) * 16) * dt;
+      if (o.x < 35 || o.x > W - 35) { o.vx *= -1; o.x = clamp(o.x, 35, W - 35); }
+      if (o.y < H * .24 || o.y > H - 38) { o.vy *= -1; o.y = clamp(o.y, H * .24, H - 38); }
+      if (performance.now() > stinkUntil && dist(mia, o) < mia.r + o.r - 5) {
+        stinkUntil = performance.now() + 1600;
+        stinkSound();
+        // Send the onion elsewhere so one touch cannot trigger it repeatedly.
+        o.x = clamp(o.x + (o.x > W / 2 ? -190 : 190), 35, W - 35);
+        o.y = clamp(o.y + (o.y > H / 2 ? -110 : 110), H * .24, H - 38);
+      }
+    }
 
     // Auto-pickup a carrot when Mia reaches it.
     if (!mia.carrying) {
@@ -455,6 +486,34 @@
     ctx.restore();
   }
 
+  function drawOnion(o, t) {
+    ctx.save();
+    ctx.translate(o.x, o.y + Math.sin(t * 4 + o.phase) * 2);
+    ctx.fillStyle = 'rgba(67,65,50,.18)';
+    ctx.beginPath(); ctx.ellipse(0, 24, 25, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ad75b7'; ctx.strokeStyle = '#704c83'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(0, 2, 22, 23, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,232,247,.75)'; ctx.lineWidth = 2;
+    for (const x of [-8, 0, 8]) {
+      ctx.beginPath(); ctx.moveTo(x, -16); ctx.quadraticCurveTo(x + 5, 2, x, 19); ctx.stroke();
+    }
+    ctx.fillStyle = '#78ba63';
+    ctx.beginPath(); ctx.ellipse(-5, -25, 5, 14, -.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(5, -25, 5, 14, .5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStink() {
+    if (performance.now() > stinkUntil) return;
+    const x = clamp(mia.x, 85, W - 85), y = Math.max(105, mia.y - 88);
+    ctx.save();
+    ctx.fillStyle = '#fff9da'; ctx.strokeStyle = '#734579'; ctx.lineWidth = 3;
+    roundedRect(x - 77, y - 25, 154, 48, 18); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#56335c'; ctx.font = 'bold 20px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Che puzza! 🤢', x, y); ctx.restore();
+  }
+
   function drawBunny(b, i, t) {
     const bob = Math.sin(b.bob) * 3;
     ctx.save();
@@ -653,8 +712,10 @@
     basket.y = H - basket.h - 24;
     drawBasket();
     carrots.forEach(c=>drawCarrot(c,t));
+    onions.forEach(o=>drawOnion(o,t));
     bunnies.forEach((b,i)=>drawBunny(b,i,t));
     drawMia(t);
+    drawStink();
     drawConfetti(dt);
   }
 
