@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#fff2d9" />
+  <title>Mia & i Lapini — Caccia alle carote</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-bunny">🐰</span>
+        <div>
+          <h1>Mia & i Lapini</h1>
+          <p>Caccia alle carote</p>
+        </div>
+      </div>
+
+      <div class="score-card" aria-live="polite">
+        <span class="score-label">Nel cestino</span>
+        <div class="carrot-score">
+          <span id="carrot1" class="score-carrot">🥕</span>
+          <span id="carrot2" class="score-carrot">🥕</span>
+          <span id="carrot3" class="score-carrot">🥕</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="game-wrap">
+      <canvas id="game" aria-label="Gioco Mia e i Lapini"></canvas>
+
+      <div class="hint" id="hint">
+        <strong>Muovi Mia</strong> con il dito oppure con le frecce.<br>
+        Tocca una carota e portala nel cestino prima dei Lapini!
+      </div>
+
+      <button id="soundBtn" class="round-btn" type="button" aria-label="Attiva o disattiva i suoni">🔊</button>
+      <button id="restartBtn" class="round-btn restart" type="button" aria-label="Ricomincia">↻</button>
+    </section>
+
+    <section id="startScreen" class="overlay visible">
+      <div class="panel intro-panel">
+        <div class="portrait-wrap">
+          <img src="assets/mia_manga.png" alt="Mia in stile manga" />
+          <span class="spark s1">✦</span>
+          <span class="spark s2">✦</span>
+          <span class="spark s3">★</span>
+        </div>
+        <div class="intro-copy">
+          <span class="eyebrow">UNA MISSIONE PER MIA</span>
+          <h2>Salva 3 carote dai Lapini!</h2>
+          <p>I coniglietti Lapino corrono verso le carote. Prendile prima di loro e portale nel cestino.</p>
+          <button id="playBtn" class="primary-btn" type="button">Gioca! 🥕</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="winScreen" class="overlay">
+      <div class="win-panel">
+        <div class="sun">☀️</div>
+        <div class="pool-scene">
+          <div class="sky-cloud c1"></div>
+          <div class="sky-cloud c2"></div>
+          <div class="pool-water">
+            <div class="water-line w1"></div>
+            <div class="water-line w2"></div>
+            <div class="water-line w3"></div>
+          </div>
+          <div class="deck"></div>
+
+          <div class="lounge">
+            <div class="chair-back"></div>
+            <div class="chair-seat"></div>
+            <img class="win-mia" src="assets/mia_manga.png" alt="Mia" />
+            <div class="smoothie" aria-label="Smoothie carota arancia limone">
+              <div class="straw"></div>
+              <div class="glass">
+                <div class="drink"></div>
+                <div class="slice orange">🍊</div>
+                <div class="slice lemon">🍋</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="palm">🌴</div>
+        </div>
+
+        <div class="win-copy">
+          <span class="eyebrow">MISSIONE COMPIUTA!</span>
+          <h2>Bravissima Mia! 🎉</h2>
+          <p>Hai messo <strong>3 carote</strong> nel cestino e hai vinto uno smoothie di <strong>carota, arancia e limone</strong> da gustare a bordo piscina.</p>
+          <button id="playAgainBtn" class="primary-btn" type="button">Gioca ancora 🐰</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
