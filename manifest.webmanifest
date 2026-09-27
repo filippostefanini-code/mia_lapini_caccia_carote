@@ -1,0 +1,13 @@
+{
+  "name": "Mia e i Lapini — Caccia alle carote",
+  "short_name": "Mia e i Lapini",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff2d9",
+  "theme_color": "#fff2d9",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
