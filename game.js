@@ -45,6 +45,7 @@
   };
 
   const carrots = [];
+  const goal = 5;
   const onions = [];
   const bunnies = [];
   const flowers = [];
@@ -135,13 +136,13 @@
     }
 
     // Gentle difficulty: the Lapini are deliberately slower than Mia.
-    const bunnyCount = W < 650 ? 2 : 3;
+    const bunnyCount = 5;
     for (let i = 0; i < bunnyCount; i++) {
       bunnies.push({
-        x: W * (.50 + i * .12),
-        y: H * (.25 + (i % 2) * .32),
+        x: W * (.34 + (i % 3) * .18),
+        y: H * (.29 + Math.floor(i / 3) * .37),
         r: 29,
-        speed: 72 + i * 7,
+        speed: 51 + i * 4,
         bob: Math.random() * Math.PI * 2,
         targetIndex: i % carrots.length,
         blink: 0
@@ -182,7 +183,7 @@
   }
 
   function updateScore() {
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= goal; i++) {
       document.getElementById(`carrot${i}`).classList.toggle('on', i <= caught);
     }
   }
@@ -241,6 +242,8 @@
       if (performance.now() > stinkUntil && dist(mia, o) < mia.r + o.r - 5) {
         stinkUntil = performance.now() + 1600;
         stinkSound();
+        caught = Math.max(0, caught - 1);
+        updateScore();
         // Send the onion elsewhere so one touch cannot trigger it repeatedly.
         o.x = clamp(o.x + (o.x > W / 2 ? -190 : 190), 35, W - 35);
         o.y = clamp(o.y + (o.y > H / 2 ? -110 : 110), H * .24, H - 38);
@@ -275,14 +278,14 @@
         beep(880, .1, 'triangle', .06);
         setTimeout(() => beep(1175, .12, 'triangle', .05), 100);
 
-        if (caught >= 3) {
+        if (caught >= goal) {
           win();
           return;
         }
 
         // New carrot appears elsewhere after a short celebration.
         setTimeout(() => {
-          if (caught < 3) repositionCarrot(c);
+          if (caught < goal) repositionCarrot(c);
         }, 650);
       }
     }
@@ -313,7 +316,7 @@
           best.respawn = 900;
           beep(210, .1, 'square', .025);
           setTimeout(() => {
-            if (caught < 3 && best.state === 'respawn') repositionCarrot(best);
+            if (caught < goal && best.state === 'respawn') repositionCarrot(best);
           }, 900);
           // Hop away from the center after stealing.
           b.x = clamp(b.x + rand(-60, 60), 40, W - 40);
@@ -516,6 +519,8 @@
 
   function drawBunny(b, i, t) {
     const bob = Math.sin(b.bob) * 3;
+    const coats = ['#fff8f1','#e8d0b6','#f1e6dc','#c9a98f','#e7dbe5'];
+    const coat = coats[i % coats.length];
     ctx.save();
     ctx.translate(b.x, b.y + bob);
 
@@ -524,25 +529,52 @@
     ctx.beginPath();ctx.ellipse(0,31,32,10,0,0,Math.PI*2);ctx.fill();
 
     // Body.
-    ctx.fillStyle = i % 2 === 0 ? '#fff8f1' : '#f3e5dd';
+    // Fluffy tail, body and soft belly.
+    ctx.fillStyle = '#fffdfa';
+    ctx.beginPath(); ctx.arc(25, 18, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = coat;
     ctx.strokeStyle = '#b98c84';
     ctx.lineWidth = 2.2;
     ctx.beginPath();ctx.ellipse(0,13,27,30,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.65)';
+    ctx.beginPath();ctx.ellipse(0,19,16,19,0,0,Math.PI*2);ctx.fill();
+    for (const sx of [-1,1]) {
+      ctx.fillStyle = coat;
+      ctx.beginPath();ctx.ellipse(sx*20,35,12,7,sx*.2,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.fillStyle = '#e9afb1';
+      for (const offset of [-4,0,4]) {
+        ctx.beginPath();ctx.arc(sx*20+offset,37,1.5,0,Math.PI*2);ctx.fill();
+      }
+    }
 
     // Ears.
     for (const sx of [-1,1]) {
       ctx.save();
       ctx.translate(sx*12,-29);
       ctx.rotate(sx*.12);
-      ctx.fillStyle = i % 2 === 0 ? '#fff8f1' : '#f3e5dd';
+      ctx.fillStyle = coat;
       ctx.beginPath();ctx.ellipse(0,0,10,28,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.fillStyle='#f5b8be';ctx.beginPath();ctx.ellipse(0,0,4.5,20,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#e9a9b1';ctx.beginPath();ctx.ellipse(0,1,5,20,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.ellipse(-2,-5,1.5,10,0,0,Math.PI*2);ctx.fill();
       ctx.restore();
     }
 
     // Head.
-    ctx.fillStyle = i % 2 === 0 ? '#fff8f1' : '#f3e5dd';
+    ctx.fillStyle = coat;
     ctx.beginPath();ctx.arc(0,-5,25,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+    // Cheeks, little tuft and expressive brows.
+    ctx.fillStyle = 'rgba(255,177,184,.45)';
+    for (const sx of [-1,1]) {
+      ctx.beginPath();ctx.ellipse(sx*15,2,7,5,0,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle = coat;
+    ctx.beginPath();ctx.moveTo(-6,-27);ctx.lineTo(-2,-34);ctx.lineTo(2,-27);
+    ctx.lineTo(6,-32);ctx.lineTo(9,-25);ctx.fill();
+    ctx.strokeStyle='#866d6c';ctx.lineWidth=1.3;
+    for (const sx of [-1,1]) {
+      ctx.beginPath();ctx.moveTo(sx*5,-17);ctx.quadraticCurveTo(sx*9,-20,sx*12,-17);ctx.stroke();
+    }
 
     // Eyes.
     ctx.fillStyle='#3f3131';
@@ -554,6 +586,15 @@
     ctx.fillStyle='#e58b95';ctx.beginPath();ctx.arc(0,-1,3.2,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle='#7c5f5f';ctx.lineWidth=1.7;
     ctx.beginPath();ctx.moveTo(0,2);ctx.quadraticCurveTo(-5,7,-9,4);ctx.moveTo(0,2);ctx.quadraticCurveTo(5,7,9,4);ctx.stroke();
+    // Tiny muzzle and whiskers.
+    ctx.fillStyle='rgba(255,255,255,.72)';
+    ctx.beginPath();ctx.ellipse(-5,1,6,4,0,0,Math.PI*2);
+    ctx.ellipse(5,1,6,4,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#e58b95';ctx.beginPath();ctx.arc(0,-1,3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#806569';ctx.lineWidth=1;
+    for (const sx of [-1,1]) for (const dy of [-3,1,5]) {
+      ctx.beginPath();ctx.moveTo(sx*11,2);ctx.quadraticCurveTo(sx*20,dy,sx*29,dy-1);ctx.stroke();
+    }
 
     // Label.
     ctx.font='800 11px ui-rounded, system-ui';
